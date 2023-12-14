@@ -14,9 +14,7 @@ struct ComposeViewControllerRepresentable: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
         Main_iosKt.MainViewController(createUIView: { () -> UIView in
             SwiftUIInUIView(
-                content: VStack {
-                    Text("SwiftUI in Compose Multiplatform")
-                }
+                content: CameraButtonView()
             )
         })
     }
