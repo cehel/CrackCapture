@@ -20,10 +20,12 @@ import platform.UIKit.UIViewController
 actual fun getPlatformName(): String = "iOS"
 
 lateinit var uiFactory: () -> UIView
+lateinit var myImageHandler: ImageHandler
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
-actual fun nativeTestView() {
+actual fun nativeTestView(imageHandler: ImageHandler) {
+    myImageHandler = imageHandler
     UIKitView(
         factory = uiFactory,
         modifier = Modifier.size(300.dp)
@@ -31,11 +33,15 @@ actual fun nativeTestView() {
     )
 }
 
+fun passInByteArray(byteArray: ByteArray) {
+    myImageHandler.onImageBytesCaptured(byteArray)
+}
+
 
 @OptIn(ExperimentalForeignApi::class)
-fun MainViewController(createUIView: () -> UIView): UIViewController =
+fun MainViewController(createCameraView: () -> UIView): UIViewController =
     ComposeUIViewController {
-        uiFactory = createUIView
+        uiFactory = createCameraView
         Column(
             Modifier
                 .fillMaxSize()
@@ -47,3 +53,5 @@ fun MainViewController(createUIView: () -> UIView): UIViewController =
             Text("How to use SwiftUI inside Compose Multiplatform")
         }
     }
+
+

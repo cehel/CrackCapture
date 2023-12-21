@@ -12,7 +12,7 @@ import shared
 
 struct ComposeViewControllerRepresentable: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
-        Main_iosKt.MainViewController(createUIView: { () -> UIView in
+        Main_iosKt.MainViewController(createCameraView: { () -> UIView in
             SwiftUIInUIView(
                 content: CameraButtonView()
             )

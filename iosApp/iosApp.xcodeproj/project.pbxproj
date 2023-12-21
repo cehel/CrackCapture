@@ -62,6 +62,7 @@
 				7555FF7D242A565900829871 /* iosApp */,
 				7555FF7C242A565900829871 /* Products */,
 				42799AB246E5F90AF97AA0EF /* Frameworks */,
+				A6488326BAE38748484997CA /* xcschemes */,
 			);
 			sourceTree = "<group>";
 		};
@@ -86,6 +87,14 @@
 				A9E6A2DB2B2ADC6F0027A7DB /* CameraButtonView.swift */,
 			);
 			path = iosApp;
+			sourceTree = "<group>";
+		};
+		A6488326BAE38748484997CA /* xcschemes */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = xcschemes;
+			path = iosApp.xcodeproj/project.xcworkspace/xcuserdata/celine.heldnerzuehlke.com.xcuserdatad/xcschemes;
 			sourceTree = "<group>";
 		};
 		AB1DB47929225F7C00F7AF9C /* Configuration */ = {
