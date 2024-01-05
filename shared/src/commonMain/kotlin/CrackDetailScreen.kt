@@ -23,27 +23,21 @@ fun CrackDetailScreen() {
 
     val viewModel = getViewModel(Unit, viewModelFactory { CrackDetailViewModel() })
 
-    val showOverlay by viewModel.showCameraView.collectAsState()
+    val showCamera by viewModel.showCameraView.collectAsState()
 
-    if (showOverlay) {
-        OverlayScreen(viewModel)
-    } else {
-        InitialScreen(onOpenOverlay = { viewModel.showCameraView() }, viewModel)
-    }
-}
-
-@Composable
-fun InitialScreen(onOpenOverlay: () -> Unit, viewModel: CrackDetailViewModel) {
     Column(modifier = Modifier.fillMaxSize()) {
-        Button(onClick = onOpenOverlay) {
-            Text("Open Overlay")
+        Button(onClick = { viewModel.showCameraView() }) {
+            Text("Capture photo")
+        }
+        if (showCamera) {
+            CameraScreen(viewModel)
         }
         MyImageDisplay(viewModel)
     }
 }
 
 @Composable
-fun OverlayScreen(viewModel: CrackDetailViewModel) {
+fun CameraScreen(viewModel: CrackDetailViewModel) {
     Column(modifier = Modifier.height(50.dp).fillMaxWidth()) {
         // Your overlay content goes here$
         takePictureNativeView(viewModel)
@@ -73,3 +67,5 @@ fun MyImageDisplay(viewModel: CrackDetailViewModel) {
 
 @Composable
 expect fun takePictureNativeView(imageHandler: ImageHandler)
+
+expect fun getPlatformName(): String
