@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,17 +25,21 @@ lateinit var myImageHandler: ImageHandler
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
-actual fun nativeTestView(imageHandler: ImageHandler) {
+actual fun takePictureNativeView(imageHandler: ImageHandler) {
     myImageHandler = imageHandler
     UIKitView(
         factory = uiFactory,
-        modifier = Modifier.size(300.dp)
+        modifier = Modifier.wrapContentSize()
             .border(2.dp, androidx.compose.ui.graphics.Color.Blue),
     )
 }
 
 fun passInByteArray(byteArray: ByteArray) {
     myImageHandler.onImageBytesCaptured(byteArray)
+}
+
+fun onCameraCancelled() {
+    myImageHandler.onCancelled()
 }
 
 
@@ -48,10 +53,11 @@ fun MainViewController(createCameraView: () -> UIView): UIViewController =
                 .windowInsetsPadding(WindowInsets.systemBars),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SwiftUITestScreen()
+            CrackDetailScreen()
             //CrackCaptureEntryScreen()
             Text("How to use SwiftUI inside Compose Multiplatform")
         }
     }
+
 
 

@@ -5,7 +5,7 @@ import model.CrackReport
 import kotlin.random.Random
 
 
-class CrackCaptureEntryViewModel : ImageHandler, ViewModel() {
+class CrackCaptureEntryViewModel : ViewModel() {
 
     private val _crackReports = MutableStateFlow<List<CrackReport>>(listOf())
     val crackReports: StateFlow<List<CrackReport>> = _crackReports
@@ -22,7 +22,4 @@ class CrackCaptureEntryViewModel : ImageHandler, ViewModel() {
         _crackReports.value = newList
     }
 
-    override fun onImageBytesCaptured(bytes: ByteArray?) {
-
-    }
 }

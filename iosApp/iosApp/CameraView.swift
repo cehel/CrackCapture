@@ -12,6 +12,10 @@ struct CameraView: UIViewControllerRepresentable {
         }
 
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+            DispatchQueue.main.async {
+                picker.dismiss(animated: false, completion: nil)
+
+            }
             if let image = info[.originalImage] as? UIImage {
                 parent.capturedImage = image
                 let imageSaver = ImageSaver()
@@ -22,6 +26,9 @@ struct CameraView: UIViewControllerRepresentable {
 
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             parent.presentationMode.wrappedValue.dismiss()
+            DispatchQueue.main.async {
+                picker.dismiss(animated: false, completion: nil)
+            }
         }
     }
 

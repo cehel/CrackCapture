@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 actual fun getPlatformName(): String = "Android"
 
 @Composable
-actual fun nativeTestView(imageHandler: ImageHandler) {
+actual fun takePictureNativeView(imageHandler: ImageHandler) {
     Text("Android Native View")
 }
 
