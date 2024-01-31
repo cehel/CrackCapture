@@ -3,6 +3,7 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.compose")
     kotlin("plugin.serialization") version "1.9.10"
+    id("io.realm.kotlin") version "1.13.0"
 }
 
 kotlin {
@@ -27,13 +28,13 @@ kotlin {
                 implementation(compose.material)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
-                implementation("io.ktor:ktor-client-core:2.3.5")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
-                implementation("io.ktor:ktor-client-content-negotiation:2.3.5")
-                implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.5")
-                implementation("io.ktor:ktor-client-logging:2.3.5")
+                implementation("org.jetbrains.skiko:skiko:0.7.85.4")
                 api("dev.icerock.moko:mvvm-core:0.16.1")
                 api("dev.icerock.moko:mvvm-compose:0.16.1")
+                implementation("io.realm.kotlin:library-base:1.13.0")
+                implementation("io.realm.kotlin:library-sync:1.13.0") // If using Device Sync
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // If using coroutines with the SDK
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
             }
         }
         val androidMain by getting {
@@ -41,7 +42,11 @@ kotlin {
                 api("androidx.activity:activity-compose:1.7.2")
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.10.1")
+                implementation("androidx.compose.ui:ui:1.5.4")
                 implementation("io.ktor:ktor-client-okhttp:2.3.5")
+                compileOnly("io.realm.kotlin:library-base:1.13.0")
+                api(compose.preview)
+                api(compose.uiTooling)
             }
         }
         val iosX64Main by getting
