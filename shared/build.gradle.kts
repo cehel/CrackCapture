@@ -35,6 +35,7 @@ kotlin {
                 implementation("io.realm.kotlin:library-sync:1.13.0") // If using Device Sync
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // If using coroutines with the SDK
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                implementation("org.jetbrains.kotlin:kotlin-test-junit")
             }
         }
         val androidMain by getting {
@@ -49,6 +50,15 @@ kotlin {
                 api(compose.uiTooling)
             }
         }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(kotlin("test-common"))
+                implementation(kotlin("test-annotations-common"))
+                implementation("app.cash.turbine:turbine:1.0.0")
+            }
+        }
+
         val iosX64Main by getting
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
@@ -62,6 +72,7 @@ kotlin {
             }
         }
     }
+
 }
 
 android {

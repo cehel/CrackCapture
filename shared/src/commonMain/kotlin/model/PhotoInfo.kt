@@ -6,7 +6,6 @@ import kotlinx.datetime.LocalDateTime
 import org.mongodb.kbson.ObjectId
 
 data class PhotoInfo(
-    val objectId: ObjectId,
     val image: ImageBitmap,
     val dateTime: LocalDateTime?,
     val descriptionBig: String,

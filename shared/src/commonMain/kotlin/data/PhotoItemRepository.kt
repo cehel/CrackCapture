@@ -1,26 +1,70 @@
 package data
 
-import androidx.compose.ui.graphics.ImageBitmap
-import encodeImageToBase64
 import io.realm.kotlin.Realm
-import io.realm.kotlin.RealmConfiguration
+import io.realm.kotlin.ext.copyFromRealm
 import io.realm.kotlin.ext.query
+import io.realm.kotlin.notifications.DeletedList
+import io.realm.kotlin.notifications.InitialList
+import io.realm.kotlin.notifications.ListChange
 import io.realm.kotlin.notifications.ResultsChange
+import io.realm.kotlin.notifications.UpdatedList
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
+import org.mongodb.kbson.ObjectId
 
-class PhotoItemRepository {
-    val config = RealmConfiguration.create(schema = setOf(PhotoItem::class))
-    val realm: Realm = Realm.open(config)
+class PhotoItemRepository(val realm: Realm) {
 
-    fun savePhotoItem(image: ImageBitmap, localDateTime: LocalDateTime) {
-        realm.writeBlocking {
-            copyToRealm(PhotoItem().apply {
-                datetime = localDateTime.toString()
-                imageBase64 = encodeImageToBase64(image) ?: ""
-            })
+    suspend fun savePhotoItem(
+        photoItem: PhotoItem,
+        crackLogItemId: ObjectId,
+        crackItemId: Long
+    ) {
+        realm.write {
+            val parentObject = query<CrackLogItem>("_id == $0", crackLogItemId).find().first()
+            val cracks = parentObject.cracks
+            val crackIndex = cracks.indexOfFirst { it.id == crackItemId }
+            parentObject.cracks[crackIndex].photos.add(photoItem)
         }
     }
+
+    suspend fun saveCrackLog(logname: String): CrackLogItem {
+        return realm.write {
+            copyToRealm(CrackLogItem().apply {
+                name = logname
+                cracks.add(CrackItem(id = 0, description = ""))
+            })
+        }.copyFromRealm()
+    }
+
+    fun photoItemsForCrackLogAndItemId(crackLogId: ObjectId, crackItemId: Long): Flow<List<PhotoItem>> {
+        val query = realm.query<CrackLogItem>("_id == $0", crackLogId).first()
+
+        // Observing changes in the CrackLogItem
+        return query.find()?.cracks?.asFlow()?.map { changes ->
+            when (changes) {
+                is InitialList -> {
+                    val crackItem = changes.list.firstOrNull { it.id == crackItemId }
+                    crackItem?.photos?: emptyList<PhotoItem>()
+                }
+                is UpdatedList -> {
+                    val crackItem = changes.list.firstOrNull { it.id == crackItemId }
+                    crackItem?.photos?: emptyList<PhotoItem>()
+                }
+                is DeletedList -> {
+                    emptyList<PhotoItem>()
+                }
+
+            }
+        } ?: flowOf(emptyList())
+    }
+
+    val crackLogItems: Flow<ResultsChange<CrackLogItem>> =
+        realm.query<CrackLogItem>().find().asFlow()
+
+    fun findAllCrackLogItems() = realm.query<CrackLogItem>().find()
+
 
     // all items in the realm
     val photoItems: Flow<ResultsChange<PhotoItem>> = realm.query<PhotoItem>().find().asFlow()

@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import data.PhotoItemRepository
 import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
+import domain.realmConfigWithName
+import io.realm.kotlin.Realm
 import model.PhotoInfo
 import takePictureNativeView
 
@@ -29,8 +31,10 @@ import takePictureNativeView
 fun PhotoListScreen() {
 
     val viewModel = getViewModel(Unit, viewModelFactory {
+        val realmConfig = realmConfigWithName("CrackLogDB")
+        val realm = Realm.open(realmConfig)
         PhotoListScreenViewModel(
-            PhotoItemRepository()
+            PhotoItemRepository(realm)
         )
     })
 
