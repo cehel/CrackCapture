@@ -3,7 +3,6 @@ import data.PhotoItem
 import data.PhotoItemRepository
 import domain.realmConfigWithName
 import io.realm.kotlin.Realm
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
