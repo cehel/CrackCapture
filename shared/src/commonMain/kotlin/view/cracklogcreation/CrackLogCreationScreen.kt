@@ -55,7 +55,6 @@ fun CreateCrackLog(viewModel: CrackLogCreationViewModel) {
     val roomToAdd = remember { mutableStateOf("") }
     val itemList = remember { mutableStateListOf<String>() }
 
-    val navigator = LocalNavigator.currentOrThrow
 
     Column(modifier = Modifier.padding(16.dp)) {
         TextField(
@@ -80,7 +79,7 @@ fun CreateCrackLog(viewModel: CrackLogCreationViewModel) {
             Button(
                 onClick = {
                     if (roomToAdd.value.isNotBlank()) {
-                        itemList.add("${roomToAdd.value}")
+                        itemList.add(roomToAdd.value)
                         roomToAdd.value = ""
                     }
                 },

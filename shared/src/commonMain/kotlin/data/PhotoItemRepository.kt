@@ -33,7 +33,6 @@ class PhotoItemRepository(val realm: Realm) {
             copyToRealm(CrackLogItem().apply {
                 name = logname
                 address = addr
-                //TODO
                 cracks.add(CrackItem(id = ((maxCrackId()?:0L)+1L), description = ""))
             })
         }.copyFromRealm()

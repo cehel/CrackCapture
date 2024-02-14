@@ -45,10 +45,10 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
-                api("androidx.activity:activity-compose:1.7.2")
+                api("androidx.activity:activity-compose:1.8.2")
                 api("androidx.appcompat:appcompat:1.6.1")
-                api("androidx.core:core-ktx:1.10.1")
-                implementation("androidx.compose.ui:ui:1.5.4")
+                api("androidx.core:core-ktx:1.12.0")
+                implementation("androidx.compose.ui:ui:1.6.1")
                 implementation("io.ktor:ktor-client-okhttp:2.3.5")
                 compileOnly("io.realm.kotlin:library-base:1.13.0")
                 api(compose.preview)

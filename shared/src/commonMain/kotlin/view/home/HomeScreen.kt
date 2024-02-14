@@ -74,7 +74,7 @@ fun CrackLogReportList(crackLogs: SnapshotStateList<CrackLogItem>) {
 @Composable
 fun CrackLogItemRow(crackLogItem: CrackLogItem) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(text = "${crackLogItem.name}", style = MaterialTheme.typography.h6)
+        Text(text = crackLogItem.name, style = MaterialTheme.typography.h6)
         Text(
             text = "Address: ${crackLogItem.address ?: ""}",
             style = MaterialTheme.typography.body1

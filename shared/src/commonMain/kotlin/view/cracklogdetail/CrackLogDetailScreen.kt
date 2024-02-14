@@ -116,7 +116,7 @@ fun CrackItemRow(crackItem: CrackItem) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(text = crackItem.description, style = MaterialTheme.typography.h6)
         Text(
-            text = "Length: ${crackItem.length ?: ""}",
+            text = "Length: ${crackItem.length}",
             style = MaterialTheme.typography.body1
         )
         Text(
