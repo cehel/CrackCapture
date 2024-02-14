@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
 import data.PhotoItemRepository
 import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
@@ -26,45 +27,54 @@ import domain.realmConfigWithName
 import io.realm.kotlin.Realm
 import model.PhotoInfo
 import takePictureNativeView
+import view.navigation.ScreenKeys
 
-@Composable
-fun PhotoListScreen() {
 
-    val viewModel = getViewModel(Unit, viewModelFactory {
-        val realmConfig = realmConfigWithName("CrackLogDB")
-        val realm = Realm.open(realmConfig)
-        PhotoListScreenViewModel(
-            PhotoItemRepository(realm)
-        )
-    })
+class PhotoListScreen(val crackId: Long, val crackLogId: String) : Screen {
 
-    val showCamera by viewModel.showCameraView.collectAsState()
+    override val key = ScreenKeys.CRACKITEM.name
 
-    var buttonClick: Int by rememberSaveable {
-        mutableStateOf<Int>(0)
-    }
+    @Composable
+    override fun Content() {
+        val viewModel = getViewModel(Unit, viewModelFactory {
+            val realmConfig = realmConfigWithName("CrackLogDB")
+            val realm = Realm.open(realmConfig)
+            PhotoListScreenViewModel(
+                crackLogId = crackLogId,
+                crackId = crackId,
+                PhotoItemRepository(
+                    realm
+                )
+            )
+        })
 
-    val imageHandler = remember {
-        object : ImageHandler {
-            override fun onImageBitmapCaptured(bitmap: ImageBitmap) =
-                viewModel.onImageBitmapCaptured(bitmap)
+        val showCamera by viewModel.showCameraView.collectAsState()
 
-            override fun onCancelled() = viewModel.onCaptureCancelled()
+        var buttonClick: Int by rememberSaveable {
+            mutableStateOf<Int>(0)
         }
+
+        val imageHandler = remember {
+            object : ImageHandler {
+                override fun onImageBitmapCaptured(bitmap: ImageBitmap) =
+                    viewModel.onImageBitmapCaptured(bitmap)
+
+                override fun onCancelled() = viewModel.onCaptureCancelled()
+            }
+        }
+
+        PhotoListScreenContent(
+            showCamera = showCamera,
+            deletePhoto = viewModel::deletePhotoItem,
+            photos = viewModel.photoInfoList,
+            onOpenCameraButtonClicked = {
+                viewModel.showCameraView()
+                buttonClick++
+            },
+            buttonClick = buttonClick,
+            imageHandler = imageHandler
+        )
     }
-
-    PhotoListScreenContent(
-        showCamera = showCamera,
-        deletePhoto = viewModel::deletePhotoItem,
-        photos = viewModel.photoInfoList,
-        onOpenCameraButtonClicked = {
-            viewModel.showCameraView()
-            buttonClick++
-        },
-        buttonClick = buttonClick,
-        imageHandler = imageHandler
-    )
-
 }
 
 @Composable

@@ -5,7 +5,6 @@ import io.realm.kotlin.ext.copyFromRealm
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.DeletedList
 import io.realm.kotlin.notifications.InitialList
-import io.realm.kotlin.notifications.ListChange
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedList
 import kotlinx.coroutines.flow.Flow
@@ -29,14 +28,32 @@ class PhotoItemRepository(val realm: Realm) {
         }
     }
 
-    suspend fun saveCrackLog(logname: String): CrackLogItem {
+    suspend fun saveCrackLog(logname: String, addr: String = ""): CrackLogItem {
         return realm.write {
             copyToRealm(CrackLogItem().apply {
                 name = logname
-                cracks.add(CrackItem(id = 0, description = ""))
+                address = addr
+                //TODO
+                cracks.add(CrackItem(id = ((maxCrackId()?:0L)+1L), description = ""))
             })
         }.copyFromRealm()
     }
+
+    suspend fun createNewCrackItem(crackLogId: ObjectId): CrackItem? {
+        val crackLogItem = realm.query<CrackLogItem>("_id == $0", crackLogId).find().first()
+        val crackItem = CrackItem(id = ((maxCrackId()?:0L)+1L), description = "")
+        return realm.write {
+            findLatest(crackLogItem)?.let { crackLog ->
+                crackLog.cracks.add(crackItem)
+                return@write crackItem
+            }
+            null
+        }
+    }
+
+    fun maxCrackId() = realm.query<CrackItem>("id >= $0 SORT(id DESC)",0L ).first().find()?.id
+
+    fun crackLogItemFlow( crackLogId: ObjectId) = realm.query<CrackLogItem>("_id == $0", crackLogId).first().asFlow()
 
     fun photoItemsForCrackLogAndItemId(crackLogId: ObjectId, crackItemId: Long): Flow<List<PhotoItem>> {
         val query = realm.query<CrackLogItem>("_id == $0", crackLogId).first()

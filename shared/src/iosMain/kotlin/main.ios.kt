@@ -21,8 +21,8 @@ import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
 import platform.UIKit.UIView
 import platform.UIKit.UIViewController
+import view.App
 import view.photolist.ImageHandler
-import view.photolist.PhotoListScreen
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -75,7 +75,7 @@ fun MainViewController(createCameraView: () -> UIView): UIViewController =
                 .windowInsetsPadding(WindowInsets.systemBars),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            PhotoListScreen()
+            App()
             //CrackCaptureEntryScreen()
             Text("How to use SwiftUI inside Compose Multiplatform")
         }

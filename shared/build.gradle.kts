@@ -21,6 +21,7 @@ kotlin {
     }
 
     sourceSets {
+        val voyagerVersion = "1.0.0-rc07"
         val commonMain by getting {
             dependencies {
                 implementation(compose.runtime)
@@ -35,6 +36,10 @@ kotlin {
                 implementation("io.realm.kotlin:library-sync:1.13.0") // If using Device Sync
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // If using coroutines with the SDK
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
+                implementation("cafe.adriel.voyager:voyager-tab-navigator:$voyagerVersion")
+                implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
+
                 implementation("org.jetbrains.kotlin:kotlin-test-junit")
             }
         }
