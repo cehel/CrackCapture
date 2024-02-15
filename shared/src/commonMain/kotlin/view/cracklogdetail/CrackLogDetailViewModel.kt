@@ -49,6 +49,10 @@ class CrackLogDetailViewModel(
         _crackItemCreated.value = null
     }
 
+    fun removeCrackItem(id: Long) {
+        photoItemRepository.deleteCrackItem(crackId = id, crackLogId = crackLogId)
+    }
+
     private suspend fun listenForCrackItemChanges() {
         photoItemRepository.crackLogItemFlow(crackLogId = crackLogId)
             .collect { singleQueryChange ->

@@ -3,10 +3,8 @@ package view.cracklogdetail
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
@@ -35,6 +33,7 @@ import org.mongodb.kbson.BsonObjectId
 import org.mongodb.kbson.ObjectId
 import view.navigation.ScreenKeys
 import view.photolist.PhotoListScreen
+import view.ui.LazyColumnSwipeDismiss
 
 class CrackLogDetailScreen(
     val crackLogId: String
@@ -71,7 +70,7 @@ class CrackLogDetailScreen(
             )
         }
 
-        CrackList(viewModel.crackItems, crackLogObj)
+        CrackList(viewModel.crackItems, crackLogObj, viewModel::removeCrackItem)
         Box(modifier = Modifier.fillMaxSize()) {
             FloatingActionButton(modifier = Modifier
                 .padding(all = 16.dp)
@@ -87,16 +86,17 @@ class CrackLogDetailScreen(
 @Composable
 fun CrackList(
     crackItems: SnapshotStateList<CrackItem>,
-    crackLogId: ObjectId
+    crackLogId: ObjectId,
+    removeItem: (Long)->Unit
 ) {
 
     val navigator = LocalNavigator.currentOrThrow
-    LazyColumn(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        items(crackItems.size) { index ->
-            val crackItem = crackItems[index]
-            Surface(Modifier.clickable {
+
+    LazyColumnSwipeDismiss(items = crackItems,
+        itemToKey = {crackItem -> crackItem.id.toString() },
+        onDismiss = {crackItem ->  removeItem(crackItem.id)},
+        rowContent = {crackItem ->
+            Surface(Modifier.fillMaxSize().clickable {
                 navigator.push(
                     PhotoListScreen(
                         crackId = crackItem.id,
@@ -105,10 +105,9 @@ fun CrackList(
                 )
             }) {
                 CrackItemRow(crackItem)
+                Divider()
             }
-            Divider()
-        }
-    }
+        })
 }
 
 @Composable

@@ -33,14 +33,24 @@ class PhotoItemRepository(val realm: Realm) {
             copyToRealm(CrackLogItem().apply {
                 name = logname
                 address = addr
-                cracks.add(CrackItem(id = ((maxCrackId()?:0L)+1L), description = ""))
+                cracks.add(
+                    CrackItem(
+                        id = ((maxCrackId() ?: 0L) + 1L),
+                        description = "",
+                        parentCrackLogId = this._id.toHexString()
+                    )
+                )
             })
         }.copyFromRealm()
     }
 
     suspend fun createNewCrackItem(crackLogId: ObjectId): CrackItem? {
         val crackLogItem = realm.query<CrackLogItem>("_id == $0", crackLogId).find().first()
-        val crackItem = CrackItem(id = ((maxCrackId()?:0L)+1L), description = "")
+        val crackItem = CrackItem(
+            id = ((maxCrackId() ?: 0L) + 1L),
+            description = "",
+            parentCrackLogId = crackLogId.toHexString()
+        )
         return realm.write {
             findLatest(crackLogItem)?.let { crackLog ->
                 crackLog.cracks.add(crackItem)
@@ -50,11 +60,15 @@ class PhotoItemRepository(val realm: Realm) {
         }
     }
 
-    fun maxCrackId() = realm.query<CrackItem>("id >= $0 SORT(id DESC)",0L ).first().find()?.id
+    fun maxCrackId() = realm.query<CrackItem>("id >= $0 SORT(id DESC)", 0L).first().find()?.id
 
-    fun crackLogItemFlow( crackLogId: ObjectId) = realm.query<CrackLogItem>("_id == $0", crackLogId).first().asFlow()
+    fun crackLogItemFlow(crackLogId: ObjectId) =
+        realm.query<CrackLogItem>("_id == $0", crackLogId).first().asFlow()
 
-    fun photoItemsForCrackLogAndItemId(crackLogId: ObjectId, crackItemId: Long): Flow<List<PhotoItem>> {
+    fun photoItemsForCrackLogAndItemId(
+        crackLogId: ObjectId,
+        crackItemId: Long
+    ): Flow<List<PhotoItem>> {
         val query = realm.query<CrackLogItem>("_id == $0", crackLogId).first()
 
         // Observing changes in the CrackLogItem
@@ -62,12 +76,14 @@ class PhotoItemRepository(val realm: Realm) {
             when (changes) {
                 is InitialList -> {
                     val crackItem = changes.list.firstOrNull { it.id == crackItemId }
-                    crackItem?.photos?: emptyList<PhotoItem>()
+                    crackItem?.photos ?: emptyList<PhotoItem>()
                 }
+
                 is UpdatedList -> {
                     val crackItem = changes.list.firstOrNull { it.id == crackItemId }
-                    crackItem?.photos?: emptyList<PhotoItem>()
+                    crackItem?.photos ?: emptyList<PhotoItem>()
                 }
+
                 is DeletedList -> {
                     emptyList<PhotoItem>()
                 }
@@ -85,10 +101,28 @@ class PhotoItemRepository(val realm: Realm) {
     // all items in the realm
     val photoItems: Flow<ResultsChange<PhotoItem>> = realm.query<PhotoItem>().find().asFlow()
 
+    fun deleteCrackLog(id: ObjectId) {
+        realm.writeBlocking {
+            val photoToDelete = query<CrackLogItem>("_id == $0", id).find()
+            delete(photoToDelete.first())
+        }
+    }
     fun deletePhotoItem(dateTime: LocalDateTime) {
         realm.writeBlocking {
             val photoToDelete = query<PhotoItem>("datetime == $0", dateTime.toString()).find()
             delete(photoToDelete.first())
+        }
+    }
+
+    fun deleteCrackItem(crackLogId: ObjectId, crackId: Long) {
+        println("Delete crackLogId: ${crackLogId.toHexString()} and itemid: $crackId")
+        realm.writeBlocking {
+            val crackToDelete = query<CrackItem>(
+                "parentCrackLogId == $0 AND id == $1",
+                crackLogId.toHexString(),
+                crackId
+            ).find()
+            delete(crackToDelete.first())
         }
     }
 }

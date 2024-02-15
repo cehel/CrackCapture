@@ -9,6 +9,7 @@ import io.realm.kotlin.notifications.InitialResults
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedResults
 import kotlinx.coroutines.launch
+import org.mongodb.kbson.ObjectId
 
 class HomeScreenViewModel(val photoRepo: PhotoItemRepository) : ViewModel() {
 
@@ -16,34 +17,42 @@ class HomeScreenViewModel(val photoRepo: PhotoItemRepository) : ViewModel() {
 
     init {
         viewModelScope.launch {
-            photoRepo.crackLogItems.collect { event: ResultsChange<CrackLogItem> ->
-                when (event) {
-                    is InitialResults -> {
-                        crackLogItems.clear()
-                        crackLogItems.addAll(event.list)
-                    }
+            listenForCrackLogChanges()
+        }
+    }
 
-                    is UpdatedResults -> {
-                        if (event.deletions.isNotEmpty() && crackLogItems.isNotEmpty()) {
-                            event.deletions.reversed().forEach {
-                                crackLogItems.removeAt(it)
-                            }
-                        }
-                        if (event.insertions.isNotEmpty()) {
-                            event.insertions.forEach {
-                                crackLogItems.add(it, event.list[it])
-                            }
-                        }
-                        if (event.changes.isNotEmpty()) {
-                            event.changes.forEach {
-                                crackLogItems.removeAt(it)
-                                crackLogItems.add(it, event.list[it])
-                            }
-                        }
-                    }
+    fun deleteCrackLog(crackLogId: String) {
+        photoRepo.deleteCrackLog(ObjectId.invoke(crackLogId))
+    }
 
-                    else -> Unit // No-op
+    private suspend fun listenForCrackLogChanges() {
+        photoRepo.crackLogItems.collect { event: ResultsChange<CrackLogItem> ->
+            when (event) {
+                is InitialResults -> {
+                    crackLogItems.clear()
+                    crackLogItems.addAll(event.list)
                 }
+
+                is UpdatedResults -> {
+                    if (event.deletions.isNotEmpty() && crackLogItems.isNotEmpty()) {
+                        event.deletions.reversed().forEach {
+                            crackLogItems.removeAt(it)
+                        }
+                    }
+                    if (event.insertions.isNotEmpty()) {
+                        event.insertions.forEach {
+                            crackLogItems.add(it, event.list[it])
+                        }
+                    }
+                    if (event.changes.isNotEmpty()) {
+                        event.changes.forEach {
+                            crackLogItems.removeAt(it)
+                            crackLogItems.add(it, event.list[it])
+                        }
+                    }
+                }
+
+                else -> Unit // No-op
             }
         }
     }

@@ -2,9 +2,7 @@ package view.home
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -24,6 +22,7 @@ import domain.realmConfigWithName
 import io.realm.kotlin.Realm
 import view.cracklogdetail.CrackLogDetailScreen
 import view.navigation.ScreenKeys
+import view.ui.LazyColumnSwipeDismiss
 
 class HomeScreen() : Screen {
     override val key = ScreenKeys.HOME.name
@@ -39,36 +38,39 @@ class HomeScreen() : Screen {
             )
         })
 
-        HomeContent(viewModel.crackLogItems)
+        HomeContent(viewModel.crackLogItems, deleteCrackLog = viewModel::deleteCrackLog)
     }
 }
 
 @Composable
 fun HomeContent(
-    crackLogs: SnapshotStateList<CrackLogItem>
+    crackLogs: SnapshotStateList<CrackLogItem>,
+    deleteCrackLog: (String) -> Unit
 ) {
 
-    CrackLogReportList(crackLogs = crackLogs)
+    CrackLogReportList(crackLogs = crackLogs, deleteCrackLog = deleteCrackLog)
 
 }
 
 @Composable
-fun CrackLogReportList(crackLogs: SnapshotStateList<CrackLogItem>) {
+fun CrackLogReportList(
+    crackLogs: SnapshotStateList<CrackLogItem>,
+    deleteCrackLog: (String) -> Unit
+) {
 
     val navigator = LocalNavigator.currentOrThrow
-    LazyColumn(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        items(crackLogs.size) { index ->
-            val crackLog = crackLogs[index]
-            Surface ( Modifier.clickable {
+
+    LazyColumnSwipeDismiss(items = crackLogs,
+        itemToKey = { log -> log._id.toHexString() },
+        onDismiss = { log -> deleteCrackLog(log._id.toHexString()) },
+        rowContent = { crackLog ->
+            Surface(Modifier.clickable {
                 navigator.push(CrackLogDetailScreen(crackLog._id.toHexString()))
             }) {
                 CrackLogItemRow(crackLog)
+                Divider()
             }
-            Divider()
-        }
-    }
+        })
 }
 
 @Composable
