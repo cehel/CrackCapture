@@ -4,22 +4,66 @@ import io.realm.kotlin.Realm
 import io.realm.kotlin.ext.copyFromRealm
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.notifications.DeletedList
+import io.realm.kotlin.notifications.DeletedObject
 import io.realm.kotlin.notifications.InitialList
+import io.realm.kotlin.notifications.InitialObject
+import io.realm.kotlin.notifications.PendingObject
 import io.realm.kotlin.notifications.ResultsChange
 import io.realm.kotlin.notifications.UpdatedList
+import io.realm.kotlin.notifications.UpdatedObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
 import org.mongodb.kbson.ObjectId
 
 class PhotoItemRepository(val realm: Realm) {
 
+    fun crackItemForId(crackLogId: String, crackItemId: Long) =
+        findCrackItemFor(crackItemId, crackLogId)
+            .first()
+            .asFlow().map { crackQuery ->
+                when (crackQuery) {
+                    is DeletedObject -> null
+                    is InitialObject -> crackQuery.obj
+                    is UpdatedObject -> crackQuery.obj
+                    is PendingObject -> crackQuery.obj
+                }
+            }
+
+    private fun findCrackItemFor(
+        crackItemId: Long,
+        crackLogId: String
+    ) = realm.query<CrackItem>("id == $0 AND parentCrackLogId == $1", crackItemId, crackLogId)
+
+    suspend fun updateCrackItem(
+        crackId: Long, crackLogId: String,
+        orientation: String? = null,
+        description: String? = null,
+        length: String? = null,
+        width: String? = null
+    ) = withContext(Dispatchers.IO){
+        realm.write {
+            val parentObject =
+                query<CrackLogItem>("_id == $0", ObjectId.invoke(crackLogId)).find().first()
+            val cracks = parentObject.cracks
+            val crackIndex = cracks.indexOfFirst { it.id == crackId }
+            orientation?.let { parentObject.cracks[crackIndex].orientation = it }
+            description?.let { parentObject.cracks[crackIndex].description = it }
+            length?.let { parentObject.cracks[crackIndex].length = it }
+            width?.let { parentObject.cracks[crackIndex].width = it }
+        }
+    }
+
+
     suspend fun savePhotoItem(
         photoItem: PhotoItem,
         crackLogItemId: ObjectId,
         crackItemId: Long
-    ) {
+    ) = withContext(Dispatchers.IO) {
         realm.write {
             val parentObject = query<CrackLogItem>("_id == $0", crackLogItemId).find().first()
             val cracks = parentObject.cracks
@@ -28,8 +72,10 @@ class PhotoItemRepository(val realm: Realm) {
         }
     }
 
-    suspend fun saveCrackLog(logname: String, addr: String = ""): CrackLogItem {
-        return realm.write {
+    suspend fun saveCrackLog(logname: String, addr: String = ""): CrackLogItem = withContext(
+        Dispatchers.IO
+    ) {
+        realm.write {
             copyToRealm(CrackLogItem().apply {
                 name = logname
                 address = addr
@@ -44,14 +90,15 @@ class PhotoItemRepository(val realm: Realm) {
         }.copyFromRealm()
     }
 
-    suspend fun createNewCrackItem(crackLogId: ObjectId): CrackItem? {
+    suspend fun createNewCrackItem(crackLogId: ObjectId): CrackItem? = withContext(Dispatchers.IO) {
+
         val crackLogItem = realm.query<CrackLogItem>("_id == $0", crackLogId).find().first()
         val crackItem = CrackItem(
             id = ((maxCrackId() ?: 0L) + 1L),
             description = "",
             parentCrackLogId = crackLogId.toHexString()
         )
-        return realm.write {
+        realm.write {
             findLatest(crackLogItem)?.let { crackLog ->
                 crackLog.cracks.add(crackItem)
                 return@write crackItem
@@ -60,16 +107,17 @@ class PhotoItemRepository(val realm: Realm) {
         }
     }
 
-    fun maxCrackId() = realm.query<CrackItem>("id >= $0 SORT(id DESC)", 0L).first().find()?.id
+    private fun maxCrackId() =
+        realm.query<CrackItem>("id >= $0 SORT(id DESC)", 0L).first().find()?.id
 
     fun crackLogItemFlow(crackLogId: ObjectId) =
         realm.query<CrackLogItem>("_id == $0", crackLogId).first().asFlow()
 
     fun photoItemsForCrackLogAndItemId(
-        crackLogId: ObjectId,
+        crackLogId: String,
         crackItemId: Long
     ): Flow<List<PhotoItem>> {
-        val query = realm.query<CrackLogItem>("_id == $0", crackLogId).first()
+        val query = realm.query<CrackLogItem>("_id == $0", ObjectId.invoke(crackLogId)).first()
 
         // Observing changes in the CrackLogItem
         return query.find()?.cracks?.asFlow()?.map { changes ->
@@ -107,6 +155,7 @@ class PhotoItemRepository(val realm: Realm) {
             delete(photoToDelete.first())
         }
     }
+
     fun deletePhotoItem(dateTime: LocalDateTime) {
         realm.writeBlocking {
             val photoToDelete = query<PhotoItem>("datetime == $0", dateTime.toString()).find()

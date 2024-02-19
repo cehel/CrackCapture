@@ -1,9 +1,11 @@
 package view.photolist
 
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -28,6 +30,7 @@ import io.realm.kotlin.Realm
 import model.PhotoInfo
 import takePictureNativeView
 import view.navigation.ScreenKeys
+import view.ui.LargeDropdownMenu
 
 
 class PhotoListScreen(val crackId: Long, val crackLogId: String) : Screen {
@@ -48,7 +51,7 @@ class PhotoListScreen(val crackId: Long, val crackLogId: String) : Screen {
             )
         })
 
-        val showCamera by viewModel.showCameraView.collectAsState()
+        val uiState by viewModel.editCrackUIState.collectAsState()
 
         var buttonClick: Int by rememberSaveable {
             mutableStateOf<Int>(0)
@@ -64,13 +67,16 @@ class PhotoListScreen(val crackId: Long, val crackLogId: String) : Screen {
         }
 
         PhotoListScreenContent(
-            showCamera = showCamera,
+            uiState = uiState,
             deletePhoto = viewModel::deletePhotoItem,
             photos = viewModel.photoInfoList,
             onOpenCameraButtonClicked = {
                 viewModel.showCameraView()
                 buttonClick++
             },
+            saveOrientation = viewModel::saveOrientation,
+            saveWidth = viewModel::saveWidth,
+            saveLength = viewModel::saveLength,
             buttonClick = buttonClick,
             imageHandler = imageHandler
         )
@@ -79,26 +85,75 @@ class PhotoListScreen(val crackId: Long, val crackLogId: String) : Screen {
 
 @Composable
 fun PhotoListScreenContent(
-    showCamera: Boolean,
+    uiState: EditCrackUIState,
     photos: SnapshotStateList<PhotoInfo>,
     deletePhoto: (PhotoInfo) -> Unit = {},
     onOpenCameraButtonClicked: () -> Unit,
+    saveOrientation: (String) -> Unit,
+    saveWidth: (String) -> Unit,
+    saveLength: (String) -> Unit,
     buttonClick: Int,
     imageHandler: ImageHandler
 ) {
-    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.padding(16.dp).fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         PhotoCardList(photos, deletePhoto)
         Button(onClick = {
             onOpenCameraButtonClicked.invoke()
         }) {
             Text("Capture photo")
         }
-        if (showCamera) {
+        if (uiState.showCamera) {
             CameraScreen(
                 buttonClick,
                 imageHandler
             )
         }
+
+        // Displaying the timestamp
+
+
+        // Orientation Picker
+
+        var selectedIndex by remember { mutableStateOf(-1) }
+        selectedIndex = uiState.orientationChoices.indexOf(uiState.orientation)
+        LargeDropdownMenu(
+            label = "Orientation",
+            items = Orientation.values().map { it.name },
+            selectedIndex = selectedIndex,
+            onItemSelected = { index, _ ->
+                saveOrientation(uiState.orientationChoices[index])
+            }
+        )
+
+        // Width Picker, similar to Orientation Picker
+        var selectedLengthIndex by remember { mutableStateOf(-1) }
+        selectedLengthIndex = uiState.lengthChoices.indexOf(uiState.length)
+        LargeDropdownMenu(
+            label = "Length",
+            items = uiState.lengthChoices,
+            selectedIndex = selectedLengthIndex,
+            onItemSelected = { index, _ ->
+                saveLength(uiState.lengthChoices[index])
+            }
+        )
+
+        // Width Picker, similar to Orientation Picker
+        var selectedWidthIndex by remember { mutableStateOf(-1) }
+        selectedWidthIndex = uiState.widthChoices.indexOf(uiState.width)
+        LargeDropdownMenu(
+            label = "Width",
+            items = uiState.widthChoices,
+            selectedIndex = selectedWidthIndex,
+            onItemSelected = { index, _ ->
+                saveWidth(uiState.widthChoices[index])
+            }
+        )
+
+        // Length Picker, similar to Orientation Picker
+
     }
 }
 

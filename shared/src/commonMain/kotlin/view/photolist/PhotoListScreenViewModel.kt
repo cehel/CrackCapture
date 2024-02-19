@@ -3,12 +3,14 @@ package view.photolist
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.ImageBitmap
+import data.CrackItem
 import data.PhotoItem
 import data.PhotoItemRepository
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import encodeImageToBase64
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -24,20 +26,36 @@ class PhotoListScreenViewModel(
     val photoRepo: PhotoItemRepository
 ) : ViewModel() {
 
-    private val crackLogObjId = ObjectId.invoke(crackLogId)
 
-    private val _showCameraView = MutableStateFlow(false)
-    val showCameraView: StateFlow<Boolean> = _showCameraView
+    private val _editCrackUIState = MutableStateFlow(EditCrackUIState())
+    val editCrackUIState: StateFlow<EditCrackUIState> = _editCrackUIState
 
     val photoInfoList: SnapshotStateList<PhotoInfo> = mutableStateListOf()
+    private var crackItem: CrackItem? = null
 
     init {
         viewModelScope.launch {
-            listenForPhotos(crackLogId = crackLogObjId, crackItemId = crackId)
+            photoRepo.crackItemForId(crackLogId = crackLogId, crackItemId = crackId).collect {
+                it?.let { updateUIStateWith(it) }
+            }
+        }
+        viewModelScope.launch {
+            listenForPhotos(crackLogId = crackLogId, crackItemId = crackId)
         }
     }
 
-    private suspend fun listenForPhotos(crackLogId: ObjectId, crackItemId: Long) {
+    private fun updateUIStateWith(crack: CrackItem) {
+        _editCrackUIState.update {
+            it.copy(
+                orientation = crack.orientation,
+                description = crack.description,
+                width = crack.width,
+                length = crack.length
+            )
+        }
+    }
+
+    private suspend fun listenForPhotos(crackLogId: String, crackItemId: Long) {
 
         photoRepo.photoItemsForCrackLogAndItemId(
             crackLogId = crackLogId,
@@ -46,7 +64,6 @@ class PhotoListScreenViewModel(
             .collect { photolist ->
                 photoInfoList.clear()
                 photoInfoList.addAll(photolist.map { it.toPhotoInfo() })
-
             }
     }
 
@@ -75,12 +92,46 @@ class PhotoListScreenViewModel(
     }
 
     fun onCaptureCancelled() {
-        _showCameraView.value = false
+        _editCrackUIState.update { it.copy(showCamera = false) }
         println("Camera View was closed")
     }
 
+    fun saveOrientation(orientation: String) {
+        viewModelScope.launch {
+            photoRepo.updateCrackItem(
+                crackId = crackId,
+                crackLogId = crackLogId,
+                orientation = orientation
+            )
+        }
+        println("Orientation saved")
+    }
+
+    fun saveWidth(width: String) {
+        viewModelScope.launch {
+            photoRepo.updateCrackItem(
+                crackId = crackId,
+                crackLogId = crackLogId,
+                width = width
+            )
+        }
+        println("Width saved")
+    }
+
+
+    fun saveLength(length: String) {
+        viewModelScope.launch {
+            photoRepo.updateCrackItem(
+                crackId = crackId,
+                crackLogId = crackLogId,
+                length = length
+            )
+        }
+        println("Length saved")
+    }
+
     fun showCameraView() {
-        _showCameraView.value = true
+        _editCrackUIState.update { it.copy(showCamera = true) }
         println("Camera View opens")
     }
 

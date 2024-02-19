@@ -2,12 +2,9 @@ package view.cracklogcreation
 
 import data.PhotoItemRepository
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class CrackLogCreationViewModel(val photoRepo: PhotoItemRepository) : ViewModel() {
 
@@ -19,15 +16,16 @@ class CrackLogCreationViewModel(val photoRepo: PhotoItemRepository) : ViewModel(
         address: String,
         navigate: () -> Unit
     ) {
+        println("Save Crack Log start")
         _showSpinner.value = true
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                photoRepo.saveCrackLog(logname = name, addr = address)
-            }
+            println("Save Crack Log start in coroutinescope")
+            photoRepo.saveCrackLog(logname = name, addr = address)
+            println("Save Crack Log in repo")
             _showSpinner.emit(false)
-            withContext(Dispatchers.Main) {
-                navigate()
-            }
+
+            navigate()
+
         }
 
     }

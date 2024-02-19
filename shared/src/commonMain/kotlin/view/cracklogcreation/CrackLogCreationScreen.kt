@@ -29,6 +29,7 @@ import dev.icerock.moko.mvvm.compose.viewModelFactory
 import domain.realmConfigWithName
 import io.realm.kotlin.Realm
 import view.navigation.ScreenKeys
+import view.photolist.PhotoListScreen
 
 class CrackLogCreationScreen : Screen {
 
@@ -54,6 +55,8 @@ fun CreateCrackLog(viewModel: CrackLogCreationViewModel) {
     val address = remember { mutableStateOf("") }
     val roomToAdd = remember { mutableStateOf("") }
     val itemList = remember { mutableStateListOf<String>() }
+
+    val navigator = LocalNavigator.currentOrThrow
 
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -97,16 +100,17 @@ fun CreateCrackLog(viewModel: CrackLogCreationViewModel) {
 
         Button(
             onClick = {
+                println("Clicked save")
                 viewModel.saveCrackLogItem(
                     name = name.value,
                     address = address.value
                 ) {
-                    //navigator.push(PhotoListScreen())
+                    navigator.pop()
                 }
             },
             modifier = Modifier.padding(top = 8.dp)
         ) {
-            Text("Start Filling the Report")
+            Text("Create")
         }
     }
 }
