@@ -81,13 +81,16 @@ class PhotoRepositoryTest {
         runBlocking {
             val crackLogItem = testSubject.saveCrackLog("TestCrack")
             assertEquals(1, testSubject.findAllCrackLogItems().size)
-            testSubject.photoItemsForCrackLogAndItemId(crackLogItem._id, 0L).test {
+            testSubject.photoItemsForCrackLogAndItemId(
+                crackLogId = crackLogItem._id.toHexString(),
+                crackItemId = crackLogItem.cracks.first().id
+            ).test {
                 val photoList = awaitItem()
                 assertEquals(0, photoList.size)
                 testSubject.savePhotoItem(
                     photoItem = PhotoItem(descr = "TestPhoto"),
                     crackLogItemId = crackLogItem._id,
-                    crackItemId = 0L
+                    crackItemId = crackLogItem.cracks.first().id
                 )
                 val photoList2 = awaitItem()
                 assertEquals(1, photoList2.size)
