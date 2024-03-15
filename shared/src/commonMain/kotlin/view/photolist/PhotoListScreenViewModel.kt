@@ -31,12 +31,16 @@ class PhotoListScreenViewModel(
     val editCrackUIState: StateFlow<EditCrackUIState> = _editCrackUIState
 
     val photoInfoList: SnapshotStateList<PhotoInfo> = mutableStateListOf()
-    private var crackItem: CrackItem? = null
 
     init {
         viewModelScope.launch {
             photoRepo.crackItemForId(crackLogId = crackLogId, crackItemId = crackId).collect {
-                it?.let { updateUIStateWith(it) }
+                it?.let {
+                    println("orientation: ${it.orientation}")
+                    println("description: ${it.description}")
+                    println("length: ${it.length}")
+                    updateUIStateWith(it)
+                }
             }
         }
         viewModelScope.launch {
@@ -94,6 +98,25 @@ class PhotoListScreenViewModel(
     fun onCaptureCancelled() {
         _editCrackUIState.update { it.copy(showCamera = false) }
         println("Camera View was closed")
+    }
+
+    fun updateDescription(description: String) {
+        _editCrackUIState.update {
+            it.copy(
+                description = description,
+            )
+        }
+    }
+
+    fun saveDescription(description: String) {
+        viewModelScope.launch {
+            photoRepo.updateCrackItem(
+                crackId = crackId,
+                crackLogId = crackLogId,
+                description = description
+            )
+        }
+        println("Description saved")
     }
 
     fun saveOrientation(orientation: String) {
