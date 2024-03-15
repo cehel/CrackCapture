@@ -31,7 +31,7 @@ fun <T> LazyColumnSwipeDismiss(
     items: List<T>,
     itemToKey: (T) -> String,
     onDismiss: (T) -> Unit,
-    rowContent: @Composable RowScope.(T) -> Unit
+    rowContent: @Composable RowScope.(T, Int) -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
@@ -88,7 +88,7 @@ fun <T> LazyColumnSwipeDismiss(
                     }
 
                 },
-                dismissContent = {rowContent(item)}
+                dismissContent = { rowContent(item, index) }
             )
         }
     }

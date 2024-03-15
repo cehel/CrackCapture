@@ -57,7 +57,7 @@ fun App() {
 
 fun getTopBarTitleFromKey(key: ScreenKey) =
     when (ScreenKeys.fromString(key)) {
-        ScreenKeys.HOME -> "Home"
+        ScreenKeys.HOME -> "Places"
         ScreenKeys.CRACKLOGDETAIL -> "Report Details"
         ScreenKeys.CRACKLOGCREATION -> "Report Creation"
         ScreenKeys.CRACKITEM -> "Crack / Defect"
