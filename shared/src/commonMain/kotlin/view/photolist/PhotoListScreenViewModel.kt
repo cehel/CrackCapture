@@ -37,7 +37,7 @@ class PhotoListScreenViewModel(
             photoRepo.crackItemForId(crackLogId = crackLogId, crackItemId = crackId).collect {
                 it?.let {
                     println("orientation: ${it.orientation}")
-                    println("description: ${it.description}")
+                    println("title: ${it.title}")
                     println("length: ${it.length}")
                     updateUIStateWith(it)
                 }
@@ -52,7 +52,7 @@ class PhotoListScreenViewModel(
         _editCrackUIState.update {
             it.copy(
                 orientation = crack.orientation,
-                description = crack.description,
+                title = crack.title,
                 width = crack.width,
                 length = crack.length
             )
@@ -100,23 +100,23 @@ class PhotoListScreenViewModel(
         println("Camera View was closed")
     }
 
-    fun updateDescription(description: String) {
+    fun updateTitle(title: String) {
         _editCrackUIState.update {
             it.copy(
-                description = description,
+                title = title,
             )
         }
     }
 
-    fun saveDescription(description: String) {
+    fun saveTitle(title: String) {
         viewModelScope.launch {
             photoRepo.updateCrackItem(
                 crackId = crackId,
                 crackLogId = crackLogId,
-                description = description
+                title = title
             )
         }
-        println("Description saved")
+        println("Title saved")
     }
 
     fun saveOrientation(orientation: String) {

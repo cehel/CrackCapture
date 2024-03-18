@@ -172,7 +172,7 @@ fun CrackItemRow(crackItem: CrackItem, index: Int) {
 
                 Column(Modifier.padding(start = 16.dp, end = 8.dp)) {
                     Text(
-                        text = crackItem.description,
+                        text = crackItem.title,
                         color = MaterialTheme.colors.onSurface,
 
                         style = TextStyle(

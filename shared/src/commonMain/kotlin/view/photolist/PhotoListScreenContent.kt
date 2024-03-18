@@ -62,7 +62,6 @@ class PhotoListScreen(val crackId: Long, val crackLogId: String) : Screen {
         })
 
         val uiState by viewModel.editCrackUIState.collectAsState()
-        val crackDescription = uiState.description
 
         var buttonClick: Int by rememberSaveable {
             mutableStateOf<Int>(0)
@@ -79,7 +78,7 @@ class PhotoListScreen(val crackId: Long, val crackLogId: String) : Screen {
 
         PhotoListScreenContent(
             uiState = uiState,
-            updateDescription = viewModel::updateDescription,
+            updateTitle = viewModel::updateTitle,
             deletePhoto = viewModel::deletePhotoItem,
             photos = viewModel.photoInfoList,
             onOpenCameraButtonClicked = {
@@ -89,7 +88,7 @@ class PhotoListScreen(val crackId: Long, val crackLogId: String) : Screen {
             saveOrientation = viewModel::saveOrientation,
             saveWidth = viewModel::saveWidth,
             saveLength = viewModel::saveLength,
-            saveDescription = viewModel::saveDescription,
+            saveTitle = viewModel::saveTitle,
             buttonClick = buttonClick,
             imageHandler = imageHandler
         )
@@ -100,21 +99,21 @@ class PhotoListScreen(val crackId: Long, val crackLogId: String) : Screen {
 @Composable
 fun PhotoListScreenContent(
     uiState: EditCrackUIState,
-    updateDescription: (String) -> Unit,
+    updateTitle: (String) -> Unit,
     photos: SnapshotStateList<PhotoInfo>,
     deletePhoto: (PhotoInfo) -> Unit = {},
     onOpenCameraButtonClicked: () -> Unit,
     saveOrientation: (String) -> Unit,
     saveWidth: (String) -> Unit,
     saveLength: (String) -> Unit,
-    saveDescription: (String) -> Unit,
+    saveTitle: (String) -> Unit,
     buttonClick: Int,
     imageHandler: ImageHandler
 ) {
     val keyboardControl = LocalSoftwareKeyboardController.current
 
-    var descriptionText by remember { mutableStateOf("") }
-    descriptionText = uiState.description
+    var titleText by remember { mutableStateOf("") }
+    titleText = uiState.title
 
     Column(
         modifier = Modifier.padding(16.dp).fillMaxSize().verticalScroll(rememberScrollState()),
@@ -133,24 +132,24 @@ fun PhotoListScreenContent(
             )
         }
 
-        // Displaying the description
+        // Displaying the title
         OutlinedTextField(
-            label = { Text("Description") },
-            value = descriptionText,
+            label = { Text("Title") },
+            value = titleText,
             enabled = true,
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
                 Icons.Filled.ArrowDropDown
             },
             onValueChange = {
-                updateDescription(it)
+                updateTitle(it)
             },
             readOnly = false,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(
                 onDone = {
                     keyboardControl?.hide()
-                    saveDescription(descriptionText)
+                    saveTitle(titleText)
                 })
         )
 

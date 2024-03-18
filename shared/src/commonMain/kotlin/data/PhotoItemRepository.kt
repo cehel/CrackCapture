@@ -42,17 +42,17 @@ class PhotoItemRepository(val realm: Realm) {
     suspend fun updateCrackItem(
         crackId: Long, crackLogId: String,
         orientation: String? = null,
-        description: String? = null,
+        title: String? = null,
         length: String? = null,
         width: String? = null
-    ) = withContext(Dispatchers.IO){
+    ) = withContext(Dispatchers.IO) {
         realm.write {
             val parentObject =
                 query<CrackLogItem>("_id == $0", ObjectId.invoke(crackLogId)).find().first()
             val cracks = parentObject.cracks
             val crackIndex = cracks.indexOfFirst { it.id == crackId }
             orientation?.let { parentObject.cracks[crackIndex].orientation = it }
-            description?.let { parentObject.cracks[crackIndex].description = it }
+            title?.let { parentObject.cracks[crackIndex].title = it }
             length?.let { parentObject.cracks[crackIndex].length = it }
             width?.let { parentObject.cracks[crackIndex].width = it }
         }
@@ -82,7 +82,7 @@ class PhotoItemRepository(val realm: Realm) {
                 cracks.add(
                     CrackItem(
                         id = ((maxCrackId() ?: 0L) + 1L),
-                        description = "",
+                        title = "",
                         parentCrackLogId = this._id.toHexString()
                     )
                 )
@@ -95,7 +95,7 @@ class PhotoItemRepository(val realm: Realm) {
         val crackLogItem = realm.query<CrackLogItem>("_id == $0", crackLogId).find().first()
         val crackItem = CrackItem(
             id = ((maxCrackId() ?: 0L) + 1L),
-            description = "",
+            title = "",
             parentCrackLogId = crackLogId.toHexString()
         )
         realm.write {

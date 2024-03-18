@@ -9,7 +9,7 @@ import model.CRACKWIDHTS
  */
 data class EditCrackUIState(
     val showCamera: Boolean = false,
-    val description: String = "",
+    val title: String = "",
     val orientation: String = "",
     val orientationChoices: List<String> = Orientation.values().map { it.name },
     val width: String = "",
